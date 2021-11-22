@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  tweets_recolector
+
+  Sample SAM Template for tweets_recolector
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: python3.9
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        TWEETS_TABLE_NAME: !Ref TweetsTable
+
+Resources:
+  ExtractAndSaveTweets:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: core/
+      Handler: app.lambda_handler
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBWritePolicy:
+            TableName: !Ref TweetsTable
+      Events:
+        TweetsRecolectorSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+  
+  ListAllTweets:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: core/
+      Handler: app.listAllTweets
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBReadPolicy:
+            TableName: !Ref TweetsTable
+      Events:
+        ListAllTweetsEndPoint:
+          Type: Api
+          Properties:
+            Path: /listAllTweets
+            Method: get
+
+  ExportToCSVFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: core/
+      Handler: app.exportTweetsToCSV
+      Environment:
+        Variables:
+          FILES_BUCKET_NAME: !Ref FilesBucket
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: '*'
+        - DynamoDBReadPolicy:
+            TableName: !Ref TweetsTable
+      Events:
+        SaveTweetsInBucketFileSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+
+
+
+  TweetsTable:
+    Type: AWS::Serverless::SimpleTable
+
+  FilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - HEAD
+            AllowedOrigins:
+              - "*"
+  
+  
