@@ -29,7 +29,7 @@ Resources:
         TweetsRecolectorSchedule:
           Type: Schedule
           Properties:
-            Schedule: rate(15 minutes)
+            Schedule: rate(7 days)
   
   ListAllTweets:
     Type: AWS::Serverless::Function

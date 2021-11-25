@@ -76,11 +76,12 @@ def exportTweetsToCSV(event, context):
     print(table_name)
     tweetsTable = boto3.resource('dynamodb')
     table = tweetsTable.Table(table_name)
-    response = table.scan()
-    response = response['Items']
+    response = table.scan(Limit=100000)
+    data = response['Items']
+    print('REGISTROS: ', len(data))
     temp_csv_file = csv.writer(open("/tmp/csv_file.csv", "w+"))
     temp_csv_file.writerow(["id", "text", "created_at", "userLocation", "userFollowersCount", "userFriendsCount"])
-    for tweet in response:
+    for tweet in data:
         temp_csv_file.writerow([tweet['id'], tweet['text'], tweet['created_at'], tweet['userLocation'], tweet['userFollowersCount'], tweet['userFriendsCount']])
     s3 = boto3.client('s3')
     s3.upload_file('/tmp/csv_file.csv', bucket_name, 'tweets.csv')
