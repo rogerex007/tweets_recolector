@@ -1,17 +1,19 @@
 {
-    "serverlessConsole.services": [
+  "serverlessConsole.services": [
+    {
+      "type": "cloudformation",
+      "title": "Logs",
+      "timeOffsetInMs": 0,
+      "awsProfile": "default",
+      "stacks": [
         {
-            "type": "cloudformation",
-            "title": "Logs",
-            "timeOffsetInMs": 0,
-            "awsProfile": "default",
-            "stacks": [
-                {
-                    "region": "us-east-2",
-                    "stackName": "sam-app",
-                    "stage": "dev"
-                }
-            ]
+          "region": "us-east-2",
+          "stackName": "sam-app",
+          "stage": "dev"
         }
-    ]
+      ]
+    }
+  ]
+
+  // hola te amo
 }
